@@ -10,6 +10,8 @@ public class PlayerMove : MonoBehaviour
 {
     private Rigidbody2D rigid2D;
     private CircleCollider2D circleCollider;
+    private SpriteRenderer spriteRenderer;
+    private BoxCollider2D boxCollider;
 
     [SerializeField]
     private float speed = 2.0f;
@@ -18,6 +20,8 @@ public class PlayerMove : MonoBehaviour
     public float jumpPower = 2f;
     private int count = 0;
     private int maxJumpCount = 2;
+    private Vector2 sclae;
+
 
     private bool bJump = true;
     public void JumpControl(bool bcontrol) 
@@ -29,7 +33,14 @@ public class PlayerMove : MonoBehaviour
     {
         rigid2D = GetComponent<Rigidbody2D>();
         circleCollider = GetComponentInChildren<CircleCollider2D>();
-        
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        boxCollider = GetComponent<BoxCollider2D>();
+
+        circleCollider.enabled = false;
+
+        sclae = transform.localScale;
+
+
     }
 
     // Update is called once per frame
@@ -51,10 +62,8 @@ public class PlayerMove : MonoBehaviour
             {
                 StartCoroutine(Co_parring());
             }
-        }
-            
+        } 
     }
-
 
     /// <summary>
     /// 이동
@@ -70,25 +79,39 @@ public class PlayerMove : MonoBehaviour
     /// </summary>
     public void Jump()
     {
-       rigid2D.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+        bJump = false;
+        rigid2D.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+
     }
 
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.tag == "Ground")
-            ClearCount();
+            ResetBjump();
     }
 
 
     private IEnumerator Co_parring() 
     {
+        
+        Vector2 changeSclae = sclae;
+        changeSclae.y = 1f;
+        transform.localScale = changeSclae;
+
         circleCollider.enabled = true;
         yield return new WaitForSeconds(1f);
+
+        transform.localScale = sclae;
         circleCollider.enabled = false;
     }
-    public void ClearCount() 
+    
+    /// <summary>
+    ///  점프 횟수 초기화 및 점프 bool 값 수정
+    /// </summary>
+    public void ResetBjump() 
     {
         count = 0;
+        bJump = true;
     }
 }
