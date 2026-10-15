@@ -1,6 +1,7 @@
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 
 /// <summary>
@@ -13,21 +14,16 @@ public class PlayerMove : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private BoxCollider2D boxCollider;
 
-    [SerializeField]
-    private float speed = 2.0f;
+    public float speed = 2.0f;
 
     [SerializeField]
     public float jumpPower = 2f;
     private int count = 0;
     private int maxJumpCount = 2;
     private Vector2 sclae;
-
+    public Vector3 direction;
 
     private bool bJump = true;
-    public void JumpControl(bool bcontrol) 
-    { 
-      bJump = bcontrol;  
-    }
 
     private void Awake()
     {
@@ -62,7 +58,9 @@ public class PlayerMove : MonoBehaviour
             {
                 StartCoroutine(Co_parring());
             }
-        } 
+        }
+
+       
     }
 
     /// <summary>
@@ -71,6 +69,20 @@ public class PlayerMove : MonoBehaviour
     /// <param name="dir">방향</param>
     public void Move(float dir)
     {
+        Vector3 scale = transform.localScale;
+        
+        if (dir >= 0.1f)
+        {
+            direction = Vector3.right;
+            scale.x = 1;
+        }
+        else if (dir <= -0.1f)
+        {
+            direction = Vector3.left;
+            scale.x = -1;
+        }
+
+        transform.localScale = scale;
         rigid2D.linearVelocityX = speed * dir;
     }
 
@@ -101,11 +113,11 @@ public class PlayerMove : MonoBehaviour
 
         circleCollider.enabled = true;
         yield return new WaitForSeconds(1f);
-
         transform.localScale = sclae;
         circleCollider.enabled = false;
+
     }
-    
+
     /// <summary>
     ///  점프 횟수 초기화 및 점프 bool 값 수정
     /// </summary>
