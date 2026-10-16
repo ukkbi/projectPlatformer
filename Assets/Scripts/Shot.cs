@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.TextCore;
+using UnityEngine.UIElements.Experimental;
 
 public class Shot : MonoBehaviour
 {
@@ -18,6 +20,9 @@ public class Shot : MonoBehaviour
 
     private int i = 0;
 
+    // ÃÑ¾Ë È¸Àü °ª¿ë
+    private float rotationValue;
+
     private void Awake()
     {
         player = GetComponent<PlayerMove>();
@@ -25,15 +30,13 @@ public class Shot : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButton(0))
+        if (Input.GetKey(KeyCode.Z))
         {
-
-
             Fire();
-            
         }
             
     }
+
     public void Fire() 
     {
         float dir = Input.GetAxis("Horizontal");
@@ -50,19 +53,19 @@ public class Shot : MonoBehaviour
         switch (calc)
         {
             case 1:
-                Debug.Log($"½ÇÇàµÊ{calc}");
+                //Debug.Log($"½ÇÇàµÊ{calc}");
                 pos = pos1;
                 break;
             case 2:
-                Debug.Log($"½ÇÇàµÊ{calc}");
+                //Debug.Log($"½ÇÇàµÊ{calc}");
                 pos = firePos.position;
                 break;
             case 3:
-                Debug.Log($"½ÇÇàµÊ{calc}");
+                //Debug.Log($"½ÇÇàµÊ{calc}");
                 pos = pos2;
                 break;
             case 0:
-                Debug.Log($"½ÇÇàµÊ{calc}");
+                //Debug.Log($"½ÇÇàµÊ{calc}");
                 pos = firePos.position;
                 break;
             default:
@@ -70,16 +73,13 @@ public class Shot : MonoBehaviour
                 break;
         }
 
-        GameObject bullet = Instantiate(BulletPrefab, pos, Quaternion.Euler(0, 0, 90));
+
+        GameObject bullet = Instantiate(BulletPrefab, pos, Quaternion.Euler(0,0,90));
         Bullet bulletComponent =  bullet.GetComponent<Bullet>();
-        bulletComponent.dir = dir;
-        bulletComponent.direction = player.direction;
+
+        bulletComponent.direction = player.FireDirection;
 
         cooltime = Time.time;
-
-        //GameObject bullet = Instantiate<GameObject>(BulletPrefab, firePos.position, Quaternion.identity);
-
-        //bullet.transform.Translate(Vector3.right * 3);
-
+        
     }
 }

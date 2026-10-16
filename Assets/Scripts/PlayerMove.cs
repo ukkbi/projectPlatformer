@@ -1,7 +1,7 @@
+using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.InputSystem;
+
 
 
 /// <summary>
@@ -11,26 +11,45 @@ public class PlayerMove : MonoBehaviour
 {
     private Rigidbody2D rigid2D;
     private CircleCollider2D circleCollider;
-    private SpriteRenderer spriteRenderer;
-    private BoxCollider2D boxCollider;
 
-    public float speed = 2.0f;
+    [SerializeField]
+    private SpriteRenderer spriteRenderer;
+
+    [SerializeField]
+    private GameObject firePos;
+    private float firePosSpace = 0.8f;
 
     [SerializeField]
     public float jumpPower = 2f;
+    [SerializeField]
+    public float speed = 2.0f;
+    
     private int count = 0;
     private int maxJumpCount = 2;
-    private Vector2 sclae;
-    public Vector3 direction;
 
+    private int offsetCount = Enum.GetValues(typeof(Offset)).Length;
+
+    private float facing = 1f;
+
+    private Vector2 sclae;
+    public Vector3[] aimDirection;
+
+    private Vector3 fireDirection = new Vector3(1,0,0);
+    public Vector3 FireDirection => fireDirection;
+    
     private bool bJump = true;
+
+    private enum Offset 
+    { 
+        right,
+        upRight,
+        up
+    }
 
     private void Awake()
     {
         rigid2D = GetComponent<Rigidbody2D>();
         circleCollider = GetComponentInChildren<CircleCollider2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        boxCollider = GetComponent<BoxCollider2D>();
 
         circleCollider.enabled = false;
 
@@ -39,28 +58,48 @@ public class PlayerMove : MonoBehaviour
 
     }
 
+    private void Start()
+    {
+        aimDirection = new Vector3[offsetCount];
+    }
+
     // Update is called once per frame
     void Update()
     {
-        float dir = Input.GetAxis("Horizontal");
-        Move(dir);
+        float dirHorizontal = Input.GetAxis("Horizontal");
+        float dirVertical = Input.GetAxis("Vertical");
 
-
-        if (Input.GetKeyDown(KeyCode.Space)) 
+        if(dirHorizontal != 0)facing = dirHorizontal > 0 ? 1: -1;
+        fireDirection.x *= facing;
+        spriteRenderer.transform.localScale = new Vector3(facing, 1, 0);
+        if (Input.GetKey(KeyCode.X))
         {
-            count++;
+            fireDirection = AimOffset(VectorToAim(dirVertical, dirHorizontal));
+            fireDirection.x *= facing;
 
-            if (count < maxJumpCount && bJump == true)
-                Jump();
+            firePos.transform.localPosition = new Vector3(0.8f, 0, 0);
+            firePos.transform.localPosition = new Vector3(fireDirection.x * firePosSpace * facing,fireDirection.y*Mathf.Abs(firePosSpace));
+        }
+        else 
+        { 
+            Move(dirHorizontal);
 
-            Debug.Log($"count : {count}");
-            if (count >= 2)
+            if (Input.GetKeyDown(KeyCode.Space))
             {
-                StartCoroutine(Co_parring());
+                count++;
+
+                if (count < maxJumpCount && bJump == true)
+                    Jump();
+
+                Debug.Log($"count : {count}");
+                if (count >= 2)
+                {
+                    StartCoroutine(Co_parring());
+                }
             }
+
         }
 
-       
     }
 
     /// <summary>
@@ -69,20 +108,7 @@ public class PlayerMove : MonoBehaviour
     /// <param name="dir">방향</param>
     public void Move(float dir)
     {
-        Vector3 scale = transform.localScale;
         
-        if (dir >= 0.1f)
-        {
-            direction = Vector3.right;
-            scale.x = 1;
-        }
-        else if (dir <= -0.1f)
-        {
-            direction = Vector3.left;
-            scale.x = -1;
-        }
-
-        transform.localScale = scale;
         rigid2D.linearVelocityX = speed * dir;
     }
 
@@ -105,8 +131,7 @@ public class PlayerMove : MonoBehaviour
 
 
     private IEnumerator Co_parring() 
-    {
-        
+    {   
         Vector2 changeSclae = sclae;
         changeSclae.y = 1f;
         transform.localScale = changeSclae;
@@ -125,5 +150,27 @@ public class PlayerMove : MonoBehaviour
     {
         count = 0;
         bJump = true;
+    }
+
+    private Offset VectorToAim(float v, float h) 
+    {
+        bool isForward = h != 0;
+        if (v > 0)
+            return isForward ? Offset.upRight : Offset.up;
+        else return Offset.right;
+    }
+
+    private Vector3 AimOffset(Offset offset) 
+    {
+        switch (offset) 
+        {
+            case Offset.upRight:
+                return new Vector3(1,1,0);
+            case Offset.up:
+                return Vector3.up;
+            default:
+                return Vector3.right;
+                
+        }
     }
 }
