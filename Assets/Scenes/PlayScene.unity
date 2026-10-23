@@ -653,7 +653,7 @@ MonoBehaviour:
   firePos: {fileID: 1763162972}
   jumpPower: 7
   speed: 5
-  direction: {x: 1, y: 0, z: 0}
+  dashSpeed: 10
 --- !u!114 &731511097
 MonoBehaviour:
   m_ObjectHideFlags: 0

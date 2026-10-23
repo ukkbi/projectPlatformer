@@ -9,7 +9,7 @@ public class Bullet : MonoBehaviour
 
     public float moveSpeed {get; } = 2f;
 
-    public Vector3 direction;
+    private Vector3 direction;
 
     private void Awake()
     {
@@ -32,5 +32,11 @@ public class Bullet : MonoBehaviour
             Debug.Log($"현재 방향 값{direction}");
             rigidbody2D.linearVelocity = direction * speed;
         }
+    }
+
+    public void SetDirection(Vector3 dir)
+    {
+        direction = dir;
+        transform.up = dir;
     }
 }

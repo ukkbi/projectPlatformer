@@ -77,7 +77,12 @@ public class Shot : MonoBehaviour
         GameObject bullet = Instantiate(BulletPrefab, pos, Quaternion.Euler(0,0,90));
         Bullet bulletComponent =  bullet.GetComponent<Bullet>();
 
-        bulletComponent.direction = player.FireDirection;
+        Vector2 bulletDir = player.FireDirection;
+        bulletDir.x *= player.Facing;
+
+        bulletComponent.SetDirection(bulletDir.normalized);
+
+
 
         cooltime = Time.time;
         

@@ -3,6 +3,14 @@ using System.Collections;
 using UnityEngine;
 
 
+// 상태
+// 일반, 고정 사격, 패링
+
+// 상태 종류를 enum으로 정의
+// 상태 값을 Player를 대표하는 클래스가 갖고 멤버 변수로 갖고 있는다.
+
+// 멤버 변수들이 많아지면 같은 역할끼리 주석이나 헤더  ([Header("인스펙터뷰에 표시할 내용")])
+
 
 /// <summary>
 /// 플레이어 이동 - 이동, 점프
@@ -30,14 +38,23 @@ public class PlayerMove : MonoBehaviour
     private int offsetCount = Enum.GetValues(typeof(Offset)).Length;
 
     private float facing = 1f;
+    public float Facing => facing;
 
     private Vector2 sclae;
-    public Vector3[] aimDirection;
 
     private Vector3 fireDirection = new Vector3(1,0,0);
     public Vector3 FireDirection => fireDirection;
     
     private bool bJump = true;
+    private bool bDash = false; // 대쉬  체크용
+    private float dashStartTime; // 대쉬 시작 시간
+    private float gravityValue; // 공중 대쉬 시를 위한 중력값 저장용
+    [SerializeField]
+    private float dashSpeed = 5f; // 대쉬 속도
+    private float dashCooldown = 2f; // 쿨타임
+    private float dashCooling = 0; // 쿨 다운 중인지 확이용
+
+
 
     private enum Offset 
     { 
@@ -60,7 +77,7 @@ public class PlayerMove : MonoBehaviour
 
     private void Start()
     {
-        aimDirection = new Vector3[offsetCount];
+        dashCooling = dashCooldown * -1f;
     }
 
     // Update is called once per frame
@@ -69,19 +86,31 @@ public class PlayerMove : MonoBehaviour
         float dirHorizontal = Input.GetAxis("Horizontal");
         float dirVertical = Input.GetAxis("Vertical");
 
-        if(dirHorizontal != 0)facing = dirHorizontal > 0 ? 1: -1;
-        fireDirection.x *= facing;
+        
+        if (Input.GetKeyDown(KeyCode.LeftShift) && bDash == false)
+        {
+            if ((Time.time - dashCooling) < dashCooldown)
+                return;
+
+            dashStartTime = Time.time;
+            gravityValue = rigid2D.gravityScale;
+            bDash = true;
+        }
+
+
+        if (dirHorizontal != 0) facing = dirHorizontal > 0 ? 1 : -1;
+
         spriteRenderer.transform.localScale = new Vector3(facing, 1, 0);
         if (Input.GetKey(KeyCode.X))
         {
             fireDirection = AimOffset(VectorToAim(dirVertical, dirHorizontal));
-            fireDirection.x *= facing;
-
-            firePos.transform.localPosition = new Vector3(0.8f, 0, 0);
-            firePos.transform.localPosition = new Vector3(fireDirection.x * firePosSpace * facing,fireDirection.y*Mathf.Abs(firePosSpace));
+            spriteRenderer.transform.localScale = new Vector3(facing, 1, 0);
+            firePos.transform.localPosition = new Vector3(fireDirection.x * firePosSpace, fireDirection.y * Mathf.Abs(firePosSpace));
         }
         else 
-        { 
+        {
+            firePos.transform.localPosition = new Vector3(0.8f, 0, 0);
+
             Move(dirHorizontal);
 
             if (Input.GetKeyDown(KeyCode.Space))
@@ -89,7 +118,7 @@ public class PlayerMove : MonoBehaviour
                 count++;
 
                 if (count < maxJumpCount && bJump == true)
-                    Jump();
+                    Jump(jumpPower);
 
                 Debug.Log($"count : {count}");
                 if (count >= 2)
@@ -98,7 +127,32 @@ public class PlayerMove : MonoBehaviour
                 }
             }
 
-        }
+        }//else
+    }
+
+    private void FixedUpdate()
+    {
+        
+        //대쉬
+        if (bDash == true) 
+        {
+            if ((Time.time - dashStartTime) < 0.3f)
+            {
+                rigid2D.gravityScale = 0;
+                rigid2D.linearVelocityY = 0;
+                rigid2D.linearVelocityX = dashSpeed * facing;
+                
+            }
+            else 
+            {
+                bDash = false;
+                rigid2D.gravityScale = gravityValue;
+                dashCooling = Time.time;
+            }
+            
+            
+        }//대쉬  if문
+
 
     }
 
@@ -115,7 +169,7 @@ public class PlayerMove : MonoBehaviour
     /// <summary>
     /// 점프
     /// </summary>
-    public void Jump()
+    public void Jump(float jumpPower)
     {
         bJump = false;
         rigid2D.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
