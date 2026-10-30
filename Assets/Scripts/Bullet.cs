@@ -3,13 +3,12 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     private new Rigidbody2D rigidbody2D;
-    
+
     [SerializeField]
     private float speed = 5f;
 
-    public float moveSpeed {get; } = 2f;
-
     private Vector3 direction;
+    private float bulletDamage = 5f;
 
     private void Awake()
     {
@@ -24,7 +23,7 @@ public class Bullet : MonoBehaviour
     void Update()
     {
         float dir = direction.x;
-        
+
         if (Mathf.Abs(dir) > 0)
             rigidbody2D.linearVelocity = direction * speed;
         else
@@ -38,5 +37,22 @@ public class Bullet : MonoBehaviour
     {
         direction = dir;
         transform.up = dir;
+    }
+    public void SetDamage(float damage) 
+    {
+        bulletDamage = damage;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collider)
+    {
+
+        if (!collider.gameObject.CompareTag("Enemy"))
+            return;
+
+        Enemy enemy = collider.GetComponent<Enemy>();
+        enemy.TakeDamage(bulletDamage);
+
+        Destroy(gameObject);
+
     }
 }

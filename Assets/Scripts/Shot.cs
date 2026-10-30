@@ -1,12 +1,8 @@
-using System.Collections;
-using System.Threading;
 using UnityEngine;
-using UnityEngine.TextCore;
-using UnityEngine.UIElements.Experimental;
 
 public class Shot : MonoBehaviour
 {
-    private PlayerMove player;
+    private Player player;
 
     [SerializeField]
     private Transform firePos;
@@ -25,7 +21,7 @@ public class Shot : MonoBehaviour
 
     private void Awake()
     {
-        player = GetComponent<PlayerMove>();
+        player = GetComponent<Player>();
     }
 
     private void Update()
@@ -81,6 +77,7 @@ public class Shot : MonoBehaviour
         bulletDir.x *= player.Facing;
 
         bulletComponent.SetDirection(bulletDir.normalized);
+        bulletComponent.SetDamage(player.BulletDamage);
 
 
 

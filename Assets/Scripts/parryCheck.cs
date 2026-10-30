@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ParryCheck : MonoBehaviour
 {
-    private PlayerMove playermove;
+    private Player player;
     private CircleCollider2D circleCollider;
     private Rigidbody2D rigidBody2D;
 
@@ -14,7 +14,7 @@ public class ParryCheck : MonoBehaviour
     private void Awake()
     {
         //플레이어 본체
-        playermove = GetComponentInParent<PlayerMove>();
+        player = GetComponentInParent<Player>();
         rigidBody2D = GetComponentInParent<Rigidbody2D>();
 
         //패링 판정용
@@ -27,7 +27,7 @@ public class ParryCheck : MonoBehaviour
         {
             rigidBody2D.linearVelocityY = 0;
 
-            playermove.Jump(parryJumpValue);
+            player.Jump(parryJumpValue);
 
             circleCollider.enabled = false;
             Debug.Log("패링 실행됨");
